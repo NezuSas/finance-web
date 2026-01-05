@@ -10,7 +10,8 @@ import {
   Palette, 
   PiggyBank, 
   Save,
-  CheckCircle2
+  CheckCircle2,
+  Loader2
 } from 'lucide-react';
 import { db } from '@/lib/db';
 import { useAuthStore } from '@/store/auth-store';
@@ -31,6 +32,7 @@ const balanceSchema = z.object({
 export default function SettingsPage() {
   const { user, updateUser } = useAuthStore();
   const [isSaved, setIsSaved] = React.useState(false);
+  const [isUpdating, setIsUpdating] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
   const profileForm = useForm({
@@ -51,6 +53,7 @@ export default function SettingsPage() {
 
   const onProfileSubmit = async (data: any) => {
     setError(null);
+    setIsUpdating(true);
     try {
       const response = await apiClient.patch('/auth/profile/', {
         profile: {
@@ -65,6 +68,8 @@ export default function SettingsPage() {
       setTimeout(() => setIsSaved(false), 3000);
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Error al actualizar el perfil');
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -131,8 +136,19 @@ export default function SettingsPage() {
               </div>
             </div>
             <div className="flex justify-end">
-              <button className="flex items-center gap-2 px-6 py-2 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-emerald-600 transition-all shadow-md">
-                <Save size={18} /> Guardar Perfil
+              <button 
+                disabled={isUpdating}
+                className="flex items-center gap-2 px-6 py-2 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-emerald-600 transition-all shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isUpdating ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" /> Actualizando...
+                  </>
+                ) : (
+                  <>
+                    <Save size={18} /> Guardar Perfil
+                  </>
+                )}
               </button>
             </div>
           </form>

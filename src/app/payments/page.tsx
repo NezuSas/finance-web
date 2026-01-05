@@ -11,9 +11,12 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
-  MoreVertical
+  MoreVertical,
+  Pencil,
+  X
 } from 'lucide-react';
 import { useFinanceData } from '@/hooks/use-finance-data';
+import { useSync } from '@/hooks/use-sync';
 import { db } from '@/lib/db';
 import { cn } from '@/lib/utils';
 import { v4 as uuidv4 } from 'uuid';
@@ -28,7 +31,10 @@ const paymentSchema = z.object({
 
 export default function PaymentsPage() {
   const { payments } = useFinanceData();
+  const { sync } = useSync();
   const [showForm, setShowForm] = React.useState(false);
+  const [editingPayment, setEditingPayment] = React.useState<any>(null);
+  const [activeMenuId, setActiveMenuId] = React.useState<string | null>(null);
   const [searchTerm, setSearchTerm] = React.useState('');
   const [statusFilter, setStatusFilter] = React.useState<'ALL' | 'PENDING' | 'OVERDUE' | 'PAID'>('ALL');
   const [dateRange, setDateRange] = React.useState({
@@ -36,23 +42,65 @@ export default function PaymentsPage() {
     end: ''
   });
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
       due_date: new Date().toISOString().split('T')[0],
+      expected_method: 'TRANSFER'
     }
   });
 
+  // Populate form when editing
+  React.useEffect(() => {
+    if (editingPayment) {
+      setValue('payee', editingPayment.payee);
+      setValue('amount', editingPayment.amount);
+      setValue('due_date', editingPayment.due_date);
+      setValue('expected_method', editingPayment.expected_method || 'TRANSFER');
+      setValue('notes', editingPayment.notes || '');
+      setShowForm(true);
+    }
+  }, [editingPayment, setValue]);
+
+  // Handle outside click for menus
+  React.useEffect(() => {
+    const handleClick = () => setActiveMenuId(null);
+    window.addEventListener('click', handleClick);
+    return () => window.removeEventListener('click', handleClick);
+  }, []);
+
+  const onNewRegistration = () => {
+    setEditingPayment(null);
+    reset({
+      payee: '',
+      amount: undefined as any,
+      due_date: new Date().toISOString().split('T')[0],
+      expected_method: 'TRANSFER',
+      notes: ''
+    });
+    setShowForm(true);
+  };
+
   const onSubmit = async (data: any) => {
-    await db.payments.add({
-      id: uuidv4(),
+    setShowForm(false);
+    
+    const paymentId = editingPayment ? editingPayment.id : uuidv4();
+    const status = editingPayment ? editingPayment.status : 'PENDING';
+    
+    await db.payments.put({
+      id: paymentId,
       ...data,
-      status: 'PENDING',
+      status: status,
       updated_at: new Date().toISOString(),
       is_synced: 0,
     });
+    
+    setEditingPayment(null);
     reset();
-    setShowForm(false);
+
+    if (navigator.onLine) {
+      sync();
+    }
   };
 
   const markAsPaid = async (payment: any) => {
@@ -78,6 +126,10 @@ export default function PaymentsPage() {
       updated_at: now,
       is_synced: 0,
     });
+
+    if (navigator.onLine) {
+      sync();
+    }
   };
 
   const filteredPayments = React.useMemo(() => {
@@ -112,7 +164,7 @@ export default function PaymentsPage() {
           <p className="text-muted-foreground text-sm">Nunca olvides una cuenta. Organiza tus compromisos pendientes.</p>
         </div>
         <button 
-          onClick={() => setShowForm(!showForm)}
+          onClick={onNewRegistration}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary hover:bg-emerald-600 text-primary-foreground font-medium shadow-lg shadow-emerald-500/20 transition-all shrink-0"
         >
           <Plus size={20} />
@@ -178,6 +230,21 @@ export default function PaymentsPage() {
 
       {showForm && (
         <div className="bg-card p-6 rounded-2xl border border-border shadow-xl animate-in zoom-in-95">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-bold text-foreground">
+              {editingPayment ? 'Editar Programación' : 'Nueva Programación'}
+            </h3>
+            <button 
+              onClick={() => {
+                setShowForm(false);
+                setEditingPayment(null);
+              }}
+              className="p-1 hover:bg-muted rounded-full text-muted-foreground"
+            >
+              <X size={20} />
+            </button>
+          </div>
+          
           <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-4">
               <div>
@@ -213,7 +280,7 @@ export default function PaymentsPage() {
                 <label className="text-sm font-medium text-foreground">Método Esperado</label>
                 <select 
                   {...register('expected_method')}
-                  className="mt-1 w-full px-4 py-2 rounded-xl border border-input bg-muted outline-none focus:ring-2 focus:ring-primary text-foreground appearance-none"
+                  className="mt-1 w-full px-4 py-2 rounded-xl border border-input bg-muted outline-none focus:ring-2 focus:ring-primary text-foreground appearance-none cursor-pointer"
                 >
                   <option value="TRANSFER">Transferencia</option>
                   <option value="CARD">Tarjeta</option>
@@ -233,8 +300,10 @@ export default function PaymentsPage() {
                 />
               </div>
               <div className="flex items-end gap-2 pb-1">
-                <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 rounded-xl border border-border font-medium text-sm text-foreground hover:bg-muted transition-colors">Cancelar</button>
-                <button type="submit" className="flex-1 py-2 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-emerald-600 text-sm shadow-md transition-all">Programar</button>
+                <button type="button" onClick={() => { setShowForm(false); setEditingPayment(null); }} className="px-4 py-2 rounded-xl border border-border font-medium text-sm text-foreground hover:bg-muted transition-colors">Cancelar</button>
+                <button type="submit" className="flex-1 py-2 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-emerald-600 text-sm shadow-md transition-all">
+                  {editingPayment ? 'Actualizar' : 'Programar'}
+                </button>
               </div>
             </div>
           </form>
@@ -251,11 +320,29 @@ export default function PaymentsPage() {
                 <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-xl">
                   <CalendarClock size={24} />
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 relative">
                   <StatusBadge status={payment.status === 'PAID' ? 'PAID' : (isOverdue ? 'OVERDUE' : 'PENDING')} />
-                  <button className="p-1 rounded-lg hover:bg-muted text-muted-foreground">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveMenuId(activeMenuId === payment.id ? null : payment.id);
+                    }}
+                    className="p-1 rounded-lg hover:bg-muted text-muted-foreground"
+                  >
                     <MoreVertical size={16} />
                   </button>
+
+                  {activeMenuId === payment.id && (
+                    <div className="absolute right-0 top-8 w-32 bg-card border border-border rounded-xl shadow-xl z-20 py-1 animate-in fade-in zoom-in-95">
+                      <button 
+                        onClick={() => setEditingPayment(payment)}
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors flex items-center gap-2 text-foreground font-medium"
+                      >
+                        <Pencil size={14} />
+                        <span>Editar</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
               

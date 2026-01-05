@@ -122,15 +122,6 @@ export default function TransactionsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('¿Estás seguro de que deseas eliminar este movimiento?')) {
-      await db.transactions.delete(id);
-      if (navigator.onLine) {
-        sync();
-      }
-    }
-  };
-
   const filteredTransactions = React.useMemo(() => {
     return transactions.filter(tx => {
       // Text Search
@@ -439,13 +430,6 @@ export default function TransactionsPage() {
                         >
                           <Pencil size={14} />
                           <span className="flex-1">Editar</span>
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(tx.id)}
-                          className="w-full text-left px-4 py-2 text-sm hover:bg-rose-500/10 text-rose-500 transition-colors flex items-center gap-2"
-                        >
-                          <Trash2 size={14} />
-                          <span className="flex-1">Eliminar</span>
                         </button>
                       </div>
                     )}
