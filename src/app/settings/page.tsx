@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { db } from '@/lib/db';
 import { useAuthStore } from '@/store/auth-store';
+import { useFinanceData } from '@/hooks/use-finance-data';
 import { apiClient } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import { v4 as uuidv4 } from 'uuid';
@@ -31,8 +32,10 @@ const balanceSchema = z.object({
 
 export default function SettingsPage() {
   const { user, updateUser } = useAuthStore();
+  const { currentWeek } = useFinanceData();
   const [isSaved, setIsSaved] = React.useState(false);
   const [isUpdating, setIsUpdating] = React.useState(false);
+  const [isUpdatingBalance, setIsUpdatingBalance] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
   const profileForm = useForm({
@@ -50,6 +53,21 @@ export default function SettingsPage() {
       opening_balance: 0,
     }
   });
+
+  // Populate balance form when current week is loaded
+  React.useEffect(() => {
+    if (currentWeek) {
+      // Check if currentWeek is actually this week (Monday)
+      const today = new Date();
+      const day = today.getDay();
+      const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+      const monday = new Date(today.setDate(diff)).toISOString().split('T')[0];
+      
+      if (currentWeek.week_start_date === monday) {
+        balanceForm.setValue('opening_balance', currentWeek.opening_balance);
+      }
+    }
+  }, [currentWeek, balanceForm]);
 
   const onProfileSubmit = async (data: any) => {
     setError(null);
@@ -74,21 +92,26 @@ export default function SettingsPage() {
   };
 
   const onBalanceSubmit = async (data: any) => {
+    setIsUpdatingBalance(true);
     // Current week ISO start
     const today = new Date();
     const day = today.getDay();
     const diff = today.getDate() - day + (day === 0 ? -6 : 1);
     const monday = new Date(today.setDate(diff)).toISOString().split('T')[0];
 
+    // Find if we already have a record for this Monday
+    const existing = await db.weeks.where('week_start_date').equals(monday).first();
+
     await db.weeks.put({
-      id: uuidv4(),
+      id: existing?.id || uuidv4(),
       week_start_date: monday,
-      opening_balance: data.opening_balance,
+      opening_balance: Number(data.opening_balance),
       updated_at: new Date().toISOString(),
       is_synced: 0,
     });
     
     setIsSaved(true);
+    setIsUpdatingBalance(false);
     setTimeout(() => setIsSaved(false), 3000);
   };
 
@@ -184,10 +207,18 @@ export default function SettingsPage() {
             </div>
             <div className="flex justify-end">
               <button 
-                disabled={new Date().getDay() !== 1}
-                className="flex items-center gap-2 px-6 py-2 rounded-xl bg-teal-500 text-white font-medium hover:bg-teal-600 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={new Date().getDay() !== 1 || isUpdatingBalance}
+                className="flex items-center gap-2 px-6 py-2 rounded-xl bg-teal-500 text-white font-medium hover:bg-teal-600 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed min-w-[160px] justify-center"
               >
-                <Save size={18} /> Establecer Saldo
+                {isUpdatingBalance ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" /> Guardando...
+                  </>
+                ) : (
+                  <>
+                    <Save size={18} /> Establecer Saldo
+                  </>
+                )}
               </button>
             </div>
           </form>
