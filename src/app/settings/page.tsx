@@ -205,7 +205,8 @@ export default function SettingsPage() {
                 <input 
                   {...balanceForm.register('opening_balance')}
                   type="number"
-                  disabled={new Date().getDay() !== 1}
+                  step="0.01"
+                  disabled={new Date().getDay() !== 1 || isUpdatingBalance}
                   className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-input bg-muted outline-none focus:ring-2 focus:ring-primary text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="0.00"
                 />
