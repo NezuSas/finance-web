@@ -16,6 +16,7 @@ import {
 import { db } from '@/lib/db';
 import { useAuthStore } from '@/store/auth-store';
 import { useFinanceData } from '@/hooks/use-finance-data';
+import { useSync } from '@/hooks/use-sync';
 import { apiClient } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import { v4 as uuidv4 } from 'uuid';
@@ -33,6 +34,7 @@ const balanceSchema = z.object({
 export default function SettingsPage() {
   const { user, updateUser } = useAuthStore();
   const { currentWeek } = useFinanceData();
+  const { sync } = useSync();
   const [isSaved, setIsSaved] = React.useState(false);
   const [isUpdating, setIsUpdating] = React.useState(false);
   const [isUpdatingBalance, setIsUpdatingBalance] = React.useState(false);
@@ -112,6 +114,11 @@ export default function SettingsPage() {
     
     setIsSaved(true);
     setIsUpdatingBalance(false);
+
+    if (navigator.onLine) {
+      sync();
+    }
+
     setTimeout(() => setIsSaved(false), 3000);
   };
 
