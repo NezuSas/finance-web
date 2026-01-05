@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { db } from '@/lib/db';
 import { useAuthStore } from '@/store/auth-store';
+import { apiClient } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -28,8 +29,9 @@ const balanceSchema = z.object({
 });
 
 export default function SettingsPage() {
-  const { user } = useAuthStore();
+  const { user, updateUser } = useAuthStore();
   const [isSaved, setIsSaved] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
   const profileForm = useForm({
     resolver: zodResolver(profileSchema),
@@ -48,10 +50,22 @@ export default function SettingsPage() {
   });
 
   const onProfileSubmit = async (data: any) => {
-    // In a real app, send to API
-    console.log('Profile update', data);
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 3000);
+    setError(null);
+    try {
+      const response = await apiClient.patch('/auth/profile/', {
+        profile: {
+          display_name: data.display_name,
+          currency: data.currency,
+          timezone: data.timezone,
+        }
+      });
+      
+      updateUser(response.data);
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 3000);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Error al actualizar el perfil');
+    }
   };
 
   const onBalanceSubmit = async (data: any) => {
@@ -89,6 +103,11 @@ export default function SettingsPage() {
           <p className="text-sm text-muted-foreground mt-1">Personaliza tu experiencia e identidad pública.</p>
         </div>
         <div className="md:col-span-2 bg-card rounded-2xl border border-border p-6 shadow-sm">
+          {error && (
+            <div className="p-3 mb-4 text-sm text-rose-500 bg-rose-500/10 border border-rose-500/20 rounded-xl text-center font-medium">
+              {error}
+            </div>
+          )}
           <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
