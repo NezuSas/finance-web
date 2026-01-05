@@ -16,6 +16,7 @@ import {
   Search,
   Filter,
   Trash2,
+  Pencil,
   MoreVertical,
   ChevronLeft,
   ChevronRight,
@@ -36,8 +37,10 @@ const txSchema = z.object({
 export default function TransactionsPage() {
   const { transactions } = useFinanceData();
   const { sync } = useSync();
-  /* State */
+  // State
   const [showForm, setShowForm] = React.useState(false);
+  const [editingTx, setEditingTx] = React.useState<any>(null);
+  const [activeMenuId, setActiveMenuId] = React.useState<string | null>(null);
   const [showFilters, setShowFilters] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState('');
   
@@ -49,7 +52,7 @@ export default function TransactionsPage() {
   // Pagination
   const [currentPage, setCurrentPage] = React.useState(1);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(txSchema),
     defaultValues: {
       type: 'EXPENSE',
@@ -58,20 +61,74 @@ export default function TransactionsPage() {
     }
   });
 
+  // Populate form when editing
+  React.useEffect(() => {
+    if (editingTx) {
+      setValue('type', editingTx.type);
+      setValue('amount', editingTx.amount);
+      setValue('date', editingTx.date);
+      setValue('counterparty', editingTx.counterparty);
+      setValue('description', editingTx.description || '');
+      setValue('method', editingTx.method);
+      setShowForm(true);
+    }
+  }, [editingTx, setValue]);
+
   // Reset pagination when filters change
   React.useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, startDate, endDate, methodFilter]);
 
+  // Handle outside click for menus
+  React.useEffect(() => {
+    const handleClick = () => setActiveMenuId(null);
+    window.addEventListener('click', handleClick);
+    return () => window.removeEventListener('click', handleClick);
+  }, []);
+
+  const onNewRegistration = () => {
+    setEditingTx(null);
+    reset({
+      type: 'EXPENSE',
+      date: new Date().toISOString().split('T')[0],
+      method: 'CASH',
+      amount: undefined as any,
+      counterparty: '',
+      description: ''
+    });
+    setShowForm(true);
+  };
+
   const onSubmit = async (data: any) => {
-    await db.transactions.add({
-      id: uuidv4(),
+    // Optimistic UI updates
+    setShowForm(false);
+    
+    const txId = editingTx ? editingTx.id : uuidv4();
+    
+    await db.transactions.put({
+      id: txId,
       ...data,
+      description: data.description || '',
       updated_at: new Date().toISOString(),
       is_synced: 0,
     });
+
+    setEditingTx(null);
     reset();
-    setShowForm(false);
+
+    // Trigger background sync
+    if (navigator.onLine) {
+       sync();
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('¿Estás seguro de que deseas eliminar este movimiento?')) {
+      await db.transactions.delete(id);
+      if (navigator.onLine) {
+        sync();
+      }
+    }
   };
 
   const filteredTransactions = React.useMemo(() => {
@@ -108,7 +165,7 @@ export default function TransactionsPage() {
           <p className="text-muted-foreground text-sm">Monitorea todos tus movimientos financieros en un solo lugar.</p>
         </div>
         <button 
-          onClick={() => setShowForm(!showForm)}
+          onClick={onNewRegistration}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary hover:bg-emerald-600 text-primary-foreground font-medium shadow-lg shadow-emerald-500/20 transition-all"
         >
           <Plus size={20} />
@@ -119,25 +176,22 @@ export default function TransactionsPage() {
       {/* Form Overlay/Section */}
       {showForm && (
         <div className="bg-card p-6 rounded-2xl border border-border shadow-xl animate-in zoom-in-95">
-          <form onSubmit={handleSubmit(async (data) => {
-             // Optimistic Close for "Instant" feel
-             setShowForm(false);
-             reset();
-             
-             // Persist Data
-             await db.transactions.add({
-               id: uuidv4(),
-               ...data,
-               description: data.description || '',
-               updated_at: new Date().toISOString(),
-               is_synced: 0,
-             });
-
-             // Trigger background sync
-             if (navigator.onLine) {
-                sync();
-             }
-          })} className="space-y-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-bold text-foreground">
+              {editingTx ? 'Editar Movimiento' : 'Nuevo Registro'}
+            </h3>
+            <button 
+              onClick={() => {
+                setShowForm(false);
+                setEditingTx(null);
+              }}
+              className="p-1 hover:bg-muted rounded-full text-muted-foreground"
+            >
+              <X size={20} />
+            </button>
+          </div>
+          
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             
             {/* Top: Type Selector */}
             <div>
@@ -181,6 +235,7 @@ export default function TransactionsPage() {
                     placeholder="0.00"
                   />
                 </div>
+                {errors.amount && <p className="mt-1 text-xs text-rose-500">{errors.amount.message as string}</p>}
               </div>
               
               <div>
@@ -190,6 +245,7 @@ export default function TransactionsPage() {
                   {...register('date')}
                   className="mt-1 w-full px-4 py-2.5 rounded-xl border border-input bg-muted outline-none focus:ring-2 focus:ring-primary text-foreground"
                 />
+                {errors.date && <p className="mt-1 text-xs text-rose-500">{errors.date.message as string}</p>}
               </div>
 
               <div>
@@ -199,6 +255,7 @@ export default function TransactionsPage() {
                   className="mt-1 w-full px-4 py-2.5 rounded-xl border border-input bg-muted outline-none focus:ring-2 focus:ring-primary text-foreground"
                   placeholder="ej. Starbucks, Salario"
                 />
+                {errors.counterparty && <p className="mt-1 text-xs text-rose-500">{errors.counterparty.message as string}</p>}
               </div>
 
               <div>
@@ -229,7 +286,10 @@ export default function TransactionsPage() {
             <div className="flex items-center gap-3 pt-2">
               <button 
                 type="button" 
-                onClick={() => setShowForm(false)} 
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingTx(null);
+                }} 
                 className="px-6 py-2.5 rounded-xl border border-border font-medium text-sm text-foreground hover:bg-muted transition-colors"
               >
                 Cancelar
@@ -238,7 +298,7 @@ export default function TransactionsPage() {
                 type="submit" 
                 className="flex-1 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-emerald-600 text-sm shadow-md shadow-emerald-500/20 transition-all"
               >
-                Guardar Movimiento
+                {editingTx ? 'Actualizar Movimiento' : 'Guardar Movimiento'}
               </button>
             </div>
           </form>
@@ -360,10 +420,35 @@ export default function TransactionsPage() {
                   )}>
                     {tx.type === 'INCOME' ? '+' : '-'}${Number(tx.amount).toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 text-right">
-                    <button className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-muted transition-all">
+                  <td className="px-6 py-4 text-right relative">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveMenuId(activeMenuId === tx.id ? null : tx.id);
+                      }}
+                      className="p-1.5 rounded-lg group-hover:bg-muted transition-all"
+                    >
                       <MoreVertical size={16} className="text-muted-foreground" />
                     </button>
+                    
+                    {activeMenuId === tx.id && (
+                      <div className="absolute right-6 top-10 w-36 bg-card border border-border rounded-xl shadow-xl z-10 py-1 animate-in fade-in zoom-in-95">
+                        <button 
+                          onClick={() => setEditingTx(tx)}
+                          className="w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors flex items-center gap-2 text-foreground"
+                        >
+                          <Pencil size={14} />
+                          <span className="flex-1">Editar</span>
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(tx.id)}
+                          className="w-full text-left px-4 py-2 text-sm hover:bg-rose-500/10 text-rose-500 transition-colors flex items-center gap-2"
+                        >
+                          <Trash2 size={14} />
+                          <span className="flex-1">Eliminar</span>
+                        </button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
