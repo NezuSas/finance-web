@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { db } from '@/lib/db';
 
 interface User {
   id: string;
@@ -37,6 +38,11 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
+        localStorage.removeItem('last_sync_at');
+        // Clear IndexedDB tables
+        db.transactions.clear();
+        db.payments.clear();
+        db.weeks.clear();
         set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false });
       },
     }),
