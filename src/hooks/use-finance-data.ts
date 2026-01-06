@@ -8,10 +8,14 @@ export function useFinanceData() {
   const localPayments = useLiveQuery(() => db.payments.toArray(), []) || [];
   const localWeeks = useLiveQuery(() => db.weeks.toArray(), []) || [];
 
-  // For MVP, we'll use the most recent week opening balance
-  const currentWeek = localWeeks.sort((a, b) => 
-    new Date(b.week_start_date).getTime() - new Date(a.week_start_date).getTime()
-  )[0];
+  // Get current local date
+  const todayStr = new Date().toLocaleDateString('en-CA');
+
+  // Pick the most recent week that has already started (on or before today)
+  const currentWeek = localWeeks
+    .filter(w => w.week_start_date <= todayStr)
+    .sort((a, b) => b.week_start_date.localeCompare(a.week_start_date))[0] 
+    || localWeeks.sort((a, b) => b.week_start_date.localeCompare(a.week_start_date))[0];
 
   const weekStart = currentWeek ? currentWeek.week_start_date : '1970-01-01';
 
