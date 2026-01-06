@@ -56,7 +56,7 @@ export default function TransactionsPage() {
     resolver: zodResolver(txSchema),
     defaultValues: {
       type: 'EXPENSE',
-      date: new Date().toISOString().split('T')[0],
+      date: new Date().toLocaleDateString('en-CA'),
       method: 'CASH'
     }
   });
@@ -90,7 +90,7 @@ export default function TransactionsPage() {
     setEditingTx(null);
     reset({
       type: 'EXPENSE',
-      date: new Date().toISOString().split('T')[0],
+      date: new Date().toLocaleDateString('en-CA'),
       method: 'CASH',
       amount: undefined as any,
       counterparty: '',

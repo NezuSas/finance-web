@@ -45,7 +45,7 @@ export default function PaymentsPage() {
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
-      due_date: new Date().toISOString().split('T')[0],
+      due_date: new Date().toLocaleDateString('en-CA'),
       expected_method: 'TRANSFER'
     }
   });
@@ -74,7 +74,7 @@ export default function PaymentsPage() {
     reset({
       payee: '',
       amount: undefined as any,
-      due_date: new Date().toISOString().split('T')[0],
+      due_date: new Date().toLocaleDateString('en-CA'),
       expected_method: 'TRANSFER',
       notes: ''
     });

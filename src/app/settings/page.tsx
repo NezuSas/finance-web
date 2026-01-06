@@ -62,8 +62,10 @@ export default function SettingsPage() {
       // Check if currentWeek is actually this week (Monday)
       const today = new Date();
       const day = today.getDay();
-      const diff = today.getDate() - day + (day === 0 ? -6 : 1);
-      const monday = new Date(today.setDate(diff)).toISOString().split('T')[0];
+      const diff = today.getDate() - (day === 0 ? 6 : day - 1);
+      const mondayObj = new Date(today);
+      mondayObj.setDate(diff);
+      const monday = mondayObj.toLocaleDateString('en-CA');
       
       if (currentWeek.week_start_date === monday) {
         balanceForm.setValue('opening_balance', currentWeek.opening_balance);
@@ -98,8 +100,10 @@ export default function SettingsPage() {
     // Current week ISO start
     const today = new Date();
     const day = today.getDay();
-    const diff = today.getDate() - day + (day === 0 ? -6 : 1);
-    const monday = new Date(today.setDate(diff)).toISOString().split('T')[0];
+    const diff = today.getDate() - (day === 0 ? 6 : day - 1); // Get Monday of this week
+    const mondayObj = new Date(today);
+    mondayObj.setDate(diff);
+    const monday = mondayObj.toLocaleDateString('en-CA'); // YYYY-MM-DD local format
 
     // Find if we already have a record for this Monday
     const existing = await db.weeks.where('week_start_date').equals(monday).first();
