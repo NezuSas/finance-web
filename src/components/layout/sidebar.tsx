@@ -56,7 +56,7 @@ export function Sidebar() {
         className={cn(
           "hidden md:flex fixed top-0 left-0 z-40 h-screen transition-all duration-300 ease-in-out border-r border-border bg-card",
           isCollapsed ? "w-20" : "w-64",
-          isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
       >
         <div className="flex flex-col h-full">
@@ -69,7 +69,7 @@ export function Sidebar() {
             )}
             <button
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="hidden lg:flex p-1.5 rounded-lg hover:bg-muted"
+              className="hidden md:flex p-1.5 rounded-lg hover:bg-muted"
             >
               {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
             </button>

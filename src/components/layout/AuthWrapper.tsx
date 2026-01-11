@@ -34,7 +34,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   return (
     <div className="flex min-h-screen bg-background text-foreground">
       <Sidebar />
-      <div className="flex-1 flex flex-col lg:pl-64 transition-[padding,margin] duration-300 ease-in-out pb-20 md:pb-0">
+      <div className="flex-1 flex flex-col md:pl-64 transition-[padding,margin] duration-300 ease-in-out pb-20 md:pb-0">
         <Header />
         <main className="flex-1 p-6 lg:p-10 bg-background min-w-0 overflow-x-hidden">
           {children}
