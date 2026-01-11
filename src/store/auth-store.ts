@@ -56,35 +56,7 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'auth-storage',
       onRehydrateStorage: () => (state) => {
-        if (state) {
-          state.isHydrated = true;
-
-          // Version Enforcement
-          const storedVersion = localStorage.getItem('app_version');
-          
-          if (storedVersion !== APP_VERSION) {
-            console.log(`Version mismatch: ${storedVersion} vs ${APP_VERSION}. Clearing cache...`);
-            
-            // 1. Clear LocalStorage keys managed manually
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
-            localStorage.removeItem('last_sync_at');
-            
-            // 2. Clear IndexedDB
-            db.transactions.clear();
-            db.payments.clear();
-            db.weeks.clear();
-
-            // 3. Reset State
-            state.user = null;
-            state.accessToken = null;
-            state.refreshToken = null;
-            state.isAuthenticated = false;
-
-            // 4. Update Version
-            localStorage.setItem('app_version', APP_VERSION);
-          }
-        }
+        if (state) state.isHydrated = true;
       },
     }
   )

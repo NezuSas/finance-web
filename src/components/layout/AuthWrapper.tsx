@@ -7,12 +7,32 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { MobileBottomBar } from "@/components/layout/mobile-bottom-bar";
 
+import { APP_VERSION } from '@/lib/constants';
+import { useAuthStore } from '@/store/auth-store';
+
 const AUTH_ROUTES = ['/loginsearch_', '/login', '/register', '/forgot-password'];
 
 export default function AuthWrapper({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isRestoring } = useAuth();
   const pathname = usePathname();
   const isAuthRoute = AUTH_ROUTES.includes(pathname);
+
+  // Version Check Effect
+  React.useEffect(() => {
+    const checkVersion = async () => {
+      const storedVersion = localStorage.getItem('app_version');
+      if (storedVersion !== APP_VERSION) {
+        console.log(`Version mismatch: ${storedVersion} vs ${APP_VERSION}. Forcing logout/cleanup.`);
+        useAuthStore.getState().logout();
+        localStorage.setItem('app_version', APP_VERSION);
+        // Optional: Force reload to ensure clean state
+        if (storedVersion) {
+           window.location.reload(); 
+        }
+      }
+    };
+    checkVersion();
+  }, []);
 
   if (isRestoring) {
     return (
