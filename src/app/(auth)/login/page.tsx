@@ -10,6 +10,7 @@ import { apiClient } from '@/lib/api-client';
 import { useAuthStore } from '@/store/auth-store';
 import { useSync } from '@/hooks/use-sync';
 import { cn } from '@/lib/utils';
+import { Eye, EyeOff } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email('Correo electrónico no válido'),
@@ -24,6 +25,7 @@ export default function LoginPage() {
   const { syncAsync } = useSync();
   const [error, setError] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [showPassword, setShowPassword] = React.useState(false);
 
   const {
     register,
@@ -40,10 +42,17 @@ export default function LoginPage() {
       const response = await apiClient.post('/auth/token/', data);
       const { access, refresh } = response.data;
       
-      // Get user profile
-      const userResponse = await apiClient.get('/auth/profile/', {
-        headers: { Authorization: `Bearer ${access}` }
-      });
+      let userResponse;
+      try {
+        // Get user profile
+        userResponse = await apiClient.get('/auth/profile/', {
+          headers: { Authorization: `Bearer ${access}` }
+        });
+      } catch (profileErr) {
+        console.error('Failed to fetch profile:', profileErr);
+        // Fallback or retry logic could go here, for now stop the infinite load
+        throw new Error('No se pudo cargar el perfil del usuario');
+      }
       
       // Update Local State
       setAuth(userResponse.data, access, refresh);
@@ -58,10 +67,11 @@ export default function LoginPage() {
 
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Credenciales inválidas');
-    } finally {
-      setIsLoading(false);
+      console.error('Login error:', err);
+      setError(err.message || err.response?.data?.detail || 'Credenciales inválidas');
+      setIsLoading(false); // Ensure loading stops
     }
+    // Don't put setIsLoading(false) in finally because we want it to stay true while redirecting
   };
 
   return (
@@ -95,15 +105,24 @@ export default function LoginPage() {
 
             <div>
               <label className="block text-sm font-medium text-foreground">Contraseña</label>
-              <input
-                {...register('password')}
-                type="password"
-                className={cn(
-                  "mt-1 block w-full px-4 py-3 rounded-xl border bg-muted focus:ring-2 focus:ring-primary transition-all outline-none text-foreground",
-                  errors.password ? "border-rose-500" : "border-input"
-                )}
-                placeholder="••••••••"
-              />
+              <div className="relative mt-1">
+                <input
+                  {...register('password')}
+                  type={showPassword ? "text" : "password"}
+                  className={cn(
+                    "block w-full px-4 py-3 rounded-xl border bg-muted focus:ring-2 focus:ring-primary transition-all outline-none text-foreground pr-10",
+                    errors.password ? "border-rose-500" : "border-input"
+                  )}
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
               {errors.password && <p className="mt-1 text-xs text-rose-500">{errors.password.message}</p>}
             </div>
           </div>
