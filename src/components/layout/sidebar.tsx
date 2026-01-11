@@ -50,23 +50,6 @@ export function Sidebar() {
     <>
       {/* Mobile Menu Button */}
       {/* Mobile Menu Button */}
-      <button
-        className={cn(
-          "fixed top-4 left-4 z-50 p-2 rounded-lg bg-emerald-500 text-white lg:hidden transition-all duration-300",
-          isMobileOpen ? "opacity-0 pointer-events-none" : "opacity-100"
-        )}
-        onClick={() => setIsMobileOpen(true)}
-      >
-        <Menu size={20} />
-      </button>
-
-      {/* Mobile Overlay */}
-      {isMobileOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
-          onClick={() => setIsMobileOpen(false)}
-        />
-      )}
 
       {/* Sidebar Container */}
       <aside
