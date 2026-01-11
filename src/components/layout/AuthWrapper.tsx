@@ -36,7 +36,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
       <Sidebar />
       <div className="flex-1 flex flex-col lg:pl-64 transition-[padding,margin] duration-300 ease-in-out pb-20 md:pb-0">
         <Header />
-        <main className="flex-1 p-6 lg:p-10 bg-background">
+        <main className="flex-1 p-6 lg:p-10 bg-background min-w-0 overflow-x-hidden">
           {children}
         </main>
       </div>

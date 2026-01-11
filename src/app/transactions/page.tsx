@@ -150,7 +150,7 @@ export default function TransactionsPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-foreground">Movimientos</h2>
           <p className="text-muted-foreground text-sm">Monitorea todos tus movimientos financieros en un solo lugar.</p>
