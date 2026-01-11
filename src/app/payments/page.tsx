@@ -163,13 +163,25 @@ export default function PaymentsPage() {
           <h2 className="text-2xl font-bold text-foreground">Pagos Programados</h2>
           <p className="text-muted-foreground text-sm">Nunca olvides una cuenta. Organiza tus compromisos pendientes.</p>
         </div>
-        <button 
-          onClick={onNewRegistration}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary hover:bg-emerald-600 text-primary-foreground font-medium shadow-lg shadow-emerald-500/20 transition-all shrink-0"
-        >
-          <Plus size={20} />
-          <span>Nueva Programación</span>
-        </button>
+        <div className="flex gap-2">
+          {/* Mobile Button: Icon Only */}
+          <button 
+            onClick={onNewRegistration}
+            className="md:hidden p-3 rounded-full bg-primary hover:bg-emerald-600 text-primary-foreground shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center shrink-0"
+            aria-label="Nueva Programación"
+          >
+            <Plus size={24} />
+          </button>
+
+          {/* Desktop Button: Full Text */}
+          <button 
+            onClick={onNewRegistration}
+            className="hidden md:flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary hover:bg-emerald-600 text-primary-foreground font-medium shadow-lg shadow-emerald-500/20 transition-all shrink-0"
+          >
+            <Plus size={20} />
+            <span>Nueva Programación</span>
+          </button>
+        </div>
       </div>
 
       {/* FILTER BAR 🧠 */}

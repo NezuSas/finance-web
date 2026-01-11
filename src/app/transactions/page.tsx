@@ -155,13 +155,25 @@ export default function TransactionsPage() {
           <h2 className="text-2xl font-bold text-foreground">Movimientos</h2>
           <p className="text-muted-foreground text-sm">Monitorea todos tus movimientos financieros en un solo lugar.</p>
         </div>
-        <button 
-          onClick={onNewRegistration}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary hover:bg-emerald-600 text-primary-foreground font-medium shadow-lg shadow-emerald-500/20 transition-all"
-        >
-          <Plus size={20} />
-          <span>Nuevo Registro</span>
-        </button>
+        <div className="flex gap-2">
+          {/* Mobile Button: Icon Only */}
+          <button 
+            onClick={onNewRegistration}
+            className="md:hidden p-3 rounded-full bg-primary hover:bg-emerald-600 text-primary-foreground shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center shrink-0"
+            aria-label="Nuevo registro"
+          >
+            <Plus size={24} />
+          </button>
+          
+          {/* Desktop Button: Full Text */}
+          <button 
+            onClick={onNewRegistration}
+            className="hidden md:flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary hover:bg-emerald-600 text-primary-foreground font-medium shadow-lg shadow-emerald-500/20 transition-all"
+          >
+            <Plus size={20} />
+            <span>Nuevo registro</span>
+          </button>
+        </div>
       </div>
 
       {/* Form Overlay/Section */}

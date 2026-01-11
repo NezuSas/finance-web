@@ -10,9 +10,17 @@ import { MobileBottomBar } from "@/components/layout/mobile-bottom-bar";
 const AUTH_ROUTES = ['/loginsearch_', '/login', '/register', '/forgot-password'];
 
 export default function AuthWrapper({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isRestoring } = useAuth();
   const pathname = usePathname();
   const isAuthRoute = AUTH_ROUTES.includes(pathname);
+
+  if (isRestoring) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500" />
+      </div>
+    );
+  }
 
   if (isAuthRoute) {
     return <>{children}</>;
@@ -20,11 +28,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
 
   // If not authenticated and not on auth route, useAuth will redirect
   if (!isAuthenticated) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-pulse text-emerald-500 font-semibold">Redirecting...</div>
-      </div>
-    );
+    return null; // Don't render "Redirecting..." text, just wait for router.push
   }
 
   return (
