@@ -57,13 +57,8 @@ export default function LoginPage() {
       // Update Local State
       setAuth(userResponse.data, access, refresh);
       
-      // Initial Sync (Pull data)
-      try {
-        await syncAsync();
-      } catch (syncError) {
-        console.error('Initial sync failed:', syncError);
-        // Continue anyway, dashboard will load from empty local or cache
-      }
+      // Initial Sync (Background)
+      syncAsync().catch(err => console.error('Background sync/pull failed:', err));
 
       router.push('/dashboard');
     } catch (err: any) {
