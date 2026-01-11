@@ -27,7 +27,7 @@ export function MobileBottomBar() {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] flex md:hidden justify-around items-center px-2 py-2 pb-safe-area-inset-bottom">
+    <div className="fixed bottom-0 left-0 right-0 z-[100] bg-card border-t border-border shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] flex md:hidden justify-around items-center px-2 py-2 pb-safe-area-inset-bottom">
       {menuItems.map((item) => {
         const isActive = pathname === item.href;
         return (
