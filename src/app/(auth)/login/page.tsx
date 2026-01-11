@@ -55,11 +55,10 @@ export default function LoginPage() {
       }
       
       // Update Local State
+      // Update Local State
       setAuth(userResponse.data, access, refresh);
       
-      // Initial Sync (Background)
-      syncAsync().catch(err => console.error('Background sync/pull failed:', err));
-
+      // Navigate immediately - AuthWrapper will handle background sync
       router.push('/dashboard');
     } catch (err: any) {
       console.error('Login error:', err);

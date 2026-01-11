@@ -9,6 +9,7 @@ import { MobileBottomBar } from "@/components/layout/mobile-bottom-bar";
 
 import { APP_VERSION } from '@/lib/constants';
 import { useAuthStore } from '@/store/auth-store';
+import { useSync } from '@/hooks/use-sync';
 
 const AUTH_ROUTES = ['/loginsearch_', '/login', '/register', '/forgot-password'];
 
@@ -17,22 +18,35 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const isAuthRoute = AUTH_ROUTES.includes(pathname);
 
-  // Version Check Effect
+  const { sync } = useSync();
+
+  // Version Check & Initial Sync Effect
   React.useEffect(() => {
-    const checkVersion = async () => {
+    const init = async () => {
+      // 1. Version Check
       const storedVersion = localStorage.getItem('app_version');
       if (storedVersion !== APP_VERSION) {
         console.log(`Version mismatch: ${storedVersion} vs ${APP_VERSION}. Forcing logout/cleanup.`);
-        useAuthStore.getState().logout();
+        
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('last_sync_at');
         localStorage.setItem('app_version', APP_VERSION);
-        // Optional: Force reload to ensure clean state
-        if (storedVersion) {
-           window.location.reload(); 
-        }
+        
+        useAuthStore.getState().logout();
+        window.location.reload();
+        return;
+      }
+
+      // 2. Auto-Sync on Fresh Login
+      // If we are authenticated but have never synced on this device (post-cleanup or fresh login)
+      if (isAuthenticated && !localStorage.getItem('last_sync_at')) {
+        console.log("Fresh login detected. Triggering initial background sync.");
+        sync();
       }
     };
-    checkVersion();
-  }, []);
+    init();
+  }, [isAuthenticated, sync]);
 
   if (isRestoring) {
     return (
