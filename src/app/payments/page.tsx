@@ -157,7 +157,7 @@ export default function PaymentsPage() {
   }, [payments, searchTerm, statusFilter, dateRange]);
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-full">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-foreground">Pagos Programados</h2>
@@ -185,7 +185,7 @@ export default function PaymentsPage() {
       </div>
 
       {/* FILTER BAR 🧠 */}
-      <div className="flex flex-col xl:flex-row items-center gap-4 bg-card p-4 rounded-2xl border border-border shadow-sm">
+      <div className="flex flex-col xl:flex-row items-center gap-4 bg-card p-4 rounded-2xl border border-border shadow-sm max-w-full">
         
         {/* Search */}
         <div className="relative flex-1 w-full xl:w-auto">

@@ -1,22 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
 
 const PUBLIC_ROUTES = ['/login', '/register', '/forgot-password'];
 
 export function useAuth() {
-  const { isAuthenticated } = useAuthStore();
-  const [isRestoring, setIsRestoring] = useState(true);
+  const { isAuthenticated, isHydrated } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
-
-  useEffect(() => {
-    // Determine if we are effectively authenticated (token exists)
-    // This simple check handles the Hydration delay
-    setIsRestoring(false);
-  }, []);
+  
+  // If store is not hydrated, we are "restoring"
+  const isRestoring = !isHydrated;
 
   useEffect(() => {
     if (isRestoring) return;

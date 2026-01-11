@@ -16,7 +16,6 @@ import { useAuthStore } from '@/store/auth-store';
 
 export function MobileBottomBar() {
   const pathname = usePathname();
-  const { logout } = useAuthStore();
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Resumen', href: '/dashboard' },
@@ -47,13 +46,6 @@ export function MobileBottomBar() {
         );
       })}
       
-      <button
-        onClick={logout}
-        className="flex flex-col items-center justify-center p-2 rounded-xl text-rose-500 hover:bg-rose-500/10 transition-all w-16"
-      >
-        <LogOut size={20} />
-        <span className="text-[10px] mt-1">Salir</span>
-      </button>
     </div>
   );
 }

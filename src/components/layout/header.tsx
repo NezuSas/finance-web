@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useTheme } from 'next-themes';
-import { Moon, Sun, Wifi, WifiOff, RefreshCcw } from 'lucide-react';
+import { Moon, Sun, Wifi, WifiOff, RefreshCcw, LogOut } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
 import { useSync } from '@/hooks/use-sync';
 import { cn } from '@/lib/utils';
@@ -82,6 +82,14 @@ export function Header() {
             {resolvedTheme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           </button>
         </div>
+
+        {/* Mobile Log Out */}
+        <button
+          onClick={() => useAuthStore.getState().logout()}
+          className="md:hidden p-2 rounded-lg text-rose-500 hover:bg-rose-500/10 transition-colors"
+        >
+          <LogOut size={20} />
+        </button>
       </div>
     </header>
   );

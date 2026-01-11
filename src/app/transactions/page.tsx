@@ -149,7 +149,7 @@ export default function TransactionsPage() {
   );
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-full">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-foreground">Movimientos</h2>
@@ -309,7 +309,8 @@ export default function TransactionsPage() {
       )}
 
       {/* Filters & Table */}
-      <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+      <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden max-w-full">
+        {/* Filter Bar */}
         <div className="p-4 border-b border-border flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
