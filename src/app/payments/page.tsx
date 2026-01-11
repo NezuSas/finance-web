@@ -185,7 +185,7 @@ export default function PaymentsPage() {
       </div>
 
       {/* FILTER BAR 🧠 */}
-      <div className="flex flex-col xl:flex-row items-center gap-4 bg-card p-4 rounded-2xl border border-border shadow-sm max-w-full">
+      <div className="flex flex-col xl:flex-row items-center gap-4 bg-card p-4 rounded-2xl border border-border shadow-sm max-w-[calc(100vw-3rem)] md:max-w-full overflow-hidden">
         
         {/* Search */}
         <div className="relative flex-1 w-full xl:w-auto">
@@ -323,7 +323,7 @@ export default function PaymentsPage() {
       )}
 
       {/* Grid of Payments */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-[calc(100vw-3rem)] md:max-w-full">
         {filteredPayments.map((payment) => {
           const isOverdue = new Date(payment.due_date) < new Date() && payment.status === 'PENDING';
           return (

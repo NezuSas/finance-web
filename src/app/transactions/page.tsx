@@ -311,7 +311,7 @@ export default function TransactionsPage() {
       {/* Filters & Table */}
       <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden max-w-full">
         {/* Filter Bar */}
-        <div className="p-4 border-b border-border flex flex-col gap-4">
+        <div className="p-4 border-b border-border flex flex-col gap-4 bg-card max-w-[calc(100vw-3rem)] md:max-w-full">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
@@ -385,7 +385,7 @@ export default function TransactionsPage() {
         </div>
 
         {/* Responsive Table Container */}
-        <div className="w-full overflow-x-auto">
+        <div className="w-full overflow-x-auto max-w-[calc(100vw-3rem)] md:max-w-full">
           <table className="w-full">
             <thead className="bg-muted/50 border-b border-border">
               <tr>
