@@ -41,7 +41,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between w-full h-16 px-6 bg-card/80 backdrop-blur-md border-b border-border">
-      <div className="flex items-center gap-4 pl-10 lg:pl-0 transition-all">
+      <div className="flex items-center gap-4 pl-0 lg:pl-0 transition-all">
         <h1 className="hidden sm:block text-lg font-semibold text-foreground">
           Bienvenido de nuevo, {user?.profile?.display_name || user?.username || 'Usuario'}
         </h1>
