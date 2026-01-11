@@ -371,15 +371,16 @@ export default function TransactionsPage() {
           )}
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-muted/50 text-muted-foreground uppercase text-[10px] font-bold tracking-widest">
+        {/* Responsive Table Container */}
+        <div className="w-full overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-muted/50 border-b border-border">
               <tr>
-                <th className="px-6 py-4">Transacción</th>
-                <th className="px-6 py-4">Fecha</th>
-                <th className="px-6 py-4">Método</th>
-                <th className="px-6 py-4 text-right">Monto</th>
-                <th className="px-6 py-4"></th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Transacción</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Fecha</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden md:table-cell">Método</th>
+                <th className="px-6 py-4 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">Monto</th>
+                <th className="px-6 py-4 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider w-[50px]"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -400,7 +401,7 @@ export default function TransactionsPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm text-muted-foreground">{tx.date}</td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 hidden md:table-cell">
                     <span className="px-2 py-1 rounded-md bg-muted text-foreground text-[10px] font-bold uppercase">
                       {tx.method === 'CASH' ? 'Efectivo' : tx.method === 'TRANSFER' ? 'Transferencia' : tx.method === 'CARD' ? 'Tarjeta' : 'Otro'}
                     </span>
